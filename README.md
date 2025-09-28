@@ -1,6 +1,6 @@
 # 🌕 MoonAtlas- Safe Zone Validator
 
-The **MoonAtlas** — also known as the **Safe Zone Validator** — is a proof-of-concept application developed by space researchers to tackle one of the most critical challenges in lunar exploration: **autonomous and soft landings on the Moon**.
+The **MoonAtlas** — also known as the **Safe Zone Validator** — is a proof-of-concept application to tackle one of the most critical challenges in lunar exploration: **autonomous and soft landings on the Moon**.
 
 MoonAtlas automates the complex, multi-criteria analysis needed to identify **validated, hazard-free landing ellipses**, helping reduce mission risk while maximizing science payload capacity.
 
