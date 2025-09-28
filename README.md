@@ -29,7 +29,7 @@ LLSA brings together:
 - 🎓 Between **theoretical learning** and **practical experience**
 
 We believe lunar exploration should be open to everyone — not just billion-dollar space agencies.  
-LLSA is a step toward **democratizing space science**, making professional-grade analysis accessible from any browser, anywhere in the world.
+MoonAtlas is a step toward **democratizing space science**, making professional-grade analysis accessible from any browser, anywhere in the world.
 
 ---
 
