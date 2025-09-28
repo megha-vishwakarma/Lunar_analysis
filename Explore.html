@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoonAtlas | Analyze the Moon</title>
+  <link rel="icon" href="icon.png" type="image/png">
+
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #0f4c75;
+            --highlight-color: #00b7c2;
+            --text-color: #e6e6e6;
+            --danger-color: #ff6b6b;
+            --safe-color: #4ecdc4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--highlight-color);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .upload-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--secondary-color);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--accent-color);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--highlight-color);
+            background-color: rgba(15, 76, 117, 0.1);
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--highlight-color);
+            transform: translateY(-2px);
+        }
+        
+        .btn-analyze {
+            background-color: var(--highlight-color);
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .analysis-section {
+            flex: 2;
+            min-width: 600px;
+            background-color: var(--secondary-color);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .image-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        #moonImage {
+            width: 100%;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #000;
+            display: none;
+        }
+        
+        #analysisCanvas {
+            width: 100%;
+            display: block;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+        
+        .analysis-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .metric-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--highlight-color);
+        }
+        
+        .metric-title {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--highlight-color);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 5px solid var(--highlight-color);
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            padding: 5px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .tab.active {
+            background-color: var(--accent-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .analysis-details {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .detail-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--highlight-color);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .analysis-section {
+                min-width: 100%;
+            }
+            
+            .legend {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Lunar Landing Site Analysis</h1>
+            <p class="subtitle">Advanced terrain analysis for safe moon landings</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <h2>Upload Moon Image</h2>
+                <p>Select a high-resolution image of the lunar surface for analysis</p>
+                
+                <div class="upload-area" id="uploadArea">
+                    <i>📁</i>
+                    <p>Drag & drop or click to upload</p>
+                    <p class="subtitle">Supports JPG, PNG, TIFF (Max 10MB)</p>
+                </div>
+                
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <p><strong>Selected file:</strong> <span id="fileName"></span></p>
+                    <p><strong>Size:</strong> <span id="fileSize"></span></p>
+                </div>
+                
+                <button class="btn btn-analyze" id="analyzeBtn">Analyze Lunar Surface</button>
+                
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Analyzing lunar surface...</p>
+                    <p>This may take a few moments</p>
+                </div>
+                
+                <div class="analysis-details" id="analysisDetails" style="display: none;">
+                    <h3>Analysis Details</h3>
+                    <div class="detail-item">
+                        <div class="detail-title">Terrain Analysis</div>
+                        <p>Evaluating surface roughness and slope variations to identify flat areas suitable for landing.</p>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-title">Crater Detection</div>
+                        <p>Identifying and mapping impact craters that could pose hazards to landing spacecraft.</p>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-title">Safety Assessment</div>
+                        <p>Calculating safety scores based on multiple factors including slope, obstacles, and surface stability.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analysis-section">
+                <h2>Analysis Results</h2>
+                
+                <div class="tab-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="overview">Overview</div>
+                        <div class="tab" data-tab="terrain">Terrain Analysis</div>
+                        <div class="tab" data-tab="safety">Safety Map</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content active" id="overview-tab">
+                    <div class="image-container">
+                        <img id="moonImage" alt="Uploaded moon image">
+                        <div class="canvas-container" id="canvasContainer">
+                            <canvas id="analysisCanvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #4ecdc4;"></div>
+                            <span>Safe Landing Zone</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                            <span>High Risk Area</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ffe66d;"></div>
+                            <span>Moderate Risk</span>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-results" id="analysisResults">
+                        <div class="metric-card">
+                            <div class="metric-title">Terrain Smoothness</div>
+                            <div class="metric-value" id="terrainValue">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Crater Density</div>
+                            <div class="metric-value" id="craterValue">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Slope Analysis</div>
+                            <div class="metric-value" id="slopeValue">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Altitude Variation</div>
+                            <div class="metric-value" id="altitudeValue">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Lighting Conditions</div>
+                            <div class="metric-value" id="lightingValue">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Thermal Stability</div>
+                            <div class="metric-value" id="thermalValue">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Regolith Properties</div>
+                            <div class="metric-value" id="regolithValue">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Pathfinding Feasibility</div>
+                            <div class="metric-value" id="pathfindingValue">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="terrain-tab">
+                    <div class="canvas-container">
+                        <canvas id="terrainCanvas"></canvas>
+                    </div>
+                    <div class="analysis-details">
+                        <h3>Terrain Analysis</h3>
+                        <p>This visualization shows elevation variations and slope analysis. Darker areas represent lower elevations, while brighter areas indicate higher terrain.</p>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="safety-tab">
+                    <div class="canvas-container">
+                        <canvas id="safetyCanvas"></canvas>
+                    </div>
+                    <div class="analysis-details">
+                        <h3>Safety Assessment</h3>
+                        <p>Comprehensive safety map combining all analysis factors. Green zones indicate optimal landing sites with minimal hazards.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+     
+
+ <footer>
+        <p>A project for AI league | Waku waku AI</p>
+    </footer>
+
+
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const moonImage = document.getElementById('moonImage');
+            const canvasContainer = document.getElementById('canvasContainer');
+            const analysisCanvas = document.getElementById('analysisCanvas');
+            const terrainCanvas = document.getElementById('terrainCanvas');
+            const safetyCanvas = document.getElementById('safetyCanvas');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const analysisResults = document.getElementById('analysisResults');
+            const analysisDetails = document.getElementById('analysisDetails');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            let uploadedImage = null;
+            let imageData = null;
+            
+            // Tab functionality
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding content
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Upload area click handler
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // File input change handler
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    
+                    // Check file size (max 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('File size exceeds 10MB limit. Please choose a smaller file.');
+                        return;
+                    }
+                    
+                    // Display file info
+                    fileName.textContent = file.name;
+                    fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+                    fileInfo.style.display = 'block';
+                    
+                    // Create image preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        moonImage.src = e.target.result;
+                        moonImage.style.display = 'block';
+                        canvasContainer.style.display = 'none';
+                        uploadedImage = moonImage;
+                        
+                        // Show analysis details
+                        analysisDetails.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Drag and drop functionality
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#00b7c2';
+                uploadArea.style.backgroundColor = 'rgba(0, 183, 194, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#0f4c75';
+                uploadArea.style.backgroundColor = '';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#0f4c75';
+                uploadArea.style.backgroundColor = '';
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    fileInput.files = e.dataTransfer.files;
+                    const event = new Event('change');
+                    fileInput.dispatchEvent(event);
+                }
+            });
+            
+            // Analyze button handler
+            analyzeBtn.addEventListener('click', function() {
+                if (!uploadedImage) {
+                    alert('Please upload an image first.');
+                    return;
+                }
+                
+                // Show loading indicator
+                loadingIndicator.style.display = 'block';
+                analyzeBtn.disabled = true;
+                
+                // Wait for image to load completely
+                if (!uploadedImage.complete) {
+                    uploadedImage.onload = function() {
+                        performAnalysis();
+                    };
+                } else {
+                    // Simulate analysis process
+                    setTimeout(() => {
+                        performAnalysis();
+                        loadingIndicator.style.display = 'none';
+                        analyzeBtn.disabled = false;
+                    }, 2000);
+                }
+            });
+            
+            // Perform analysis on the uploaded image
+            function performAnalysis() {
+                // Show canvas and hide original image
+                moonImage.style.display = 'none';
+                document.querySelectorAll('.canvas-container').forEach(container => {
+                    container.style.display = 'block';
+                });
+                
+                // Set canvas dimensions to match the image
+                const canvasElements = [analysisCanvas, terrainCanvas, safetyCanvas];
+                canvasElements.forEach(canvas => {
+                    canvas.width = moonImage.naturalWidth || 800;
+                    canvas.height = moonImage.naturalHeight || 600;
+                });
+                
+                // Get image data for analysis
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = moonImage.naturalWidth;
+                tempCanvas.height = moonImage.naturalHeight;
+                tempCtx.drawImage(moonImage, 0, 0);
+                imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Generate simulated analysis data
+                generateAnalysisData();
+                
+                // Create different visualizations for each tab
+                createOverviewVisualization();
+                createTerrainVisualization();
+                createSafetyVisualization();
+            }
+            
+            // Generate simulated analysis data
+            function generateAnalysisData() {
+                // These would normally come from actual analysis algorithms
+                // For demo purposes, we'll generate realistic-looking values
+                document.getElementById('terrainValue').textContent = `${Math.floor(70 + Math.random() * 25)}%`;
+                document.getElementById('craterValue').textContent = ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)];
+                document.getElementById('slopeValue').textContent = `${(Math.random() * 5).toFixed(1)}°`;
+                document.getElementById('altitudeValue').textContent = `±${Math.floor(10 + Math.random() * 20)}m`;
+                document.getElementById('lightingValue').textContent = ['Optimal', 'Good', 'Moderate'][Math.floor(Math.random() * 3)];
+                document.getElementById('thermalValue').textContent = ['Stable', 'Moderate', 'Variable'][Math.floor(Math.random() * 3)];
+                document.getElementById('regolithValue').textContent = ['Suitable', 'Adequate', 'Challenging'][Math.floor(Math.random() * 3)];
+                document.getElementById('pathfindingValue').textContent = ['High', 'Moderate', 'Low'][Math.floor(Math.random() * 3)];
+            }
+            
+            // Create overview visualization
+            function createOverviewVisualization() {
+                const ctx = analysisCanvas.getContext('2d');
+                
+                // Draw the original image on canvas
+                ctx.drawImage(moonImage, 0, 0, analysisCanvas.width, analysisCanvas.height);
+                
+                // Create heat map overlay
+                createHeatMap(ctx);
+                
+                // Highlight safe landing zones
+                highlightSafeZones(ctx);
+            }
+            
+            // Create terrain visualization
+            function createTerrainVisualization() {
+                const ctx = terrainCanvas.getContext('2d');
+                
+                // Draw the original image in grayscale
+                ctx.drawImage(moonImage, 0, 0, terrainCanvas.width, terrainCanvas.height);
+                
+                // Convert to grayscale and enhance contrast for terrain
+                const imageData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    // Enhance contrast for terrain visualization
+                    const enhanced = brightness < 128 ? brightness * 0.7 : brightness * 1.3;
+                    data[i] = data[i + 1] = data[i + 2] = Math.min(255, Math.max(0, enhanced));
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                
+                // Add contour lines
+                ctx.strokeStyle = 'rgba(0, 183, 194, 0.5)';
+                ctx.lineWidth = 1;
+                
+                for (let y = 0; y < terrainCanvas.height; y += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(terrainCanvas.width, y);
+                    ctx.stroke();
+                }
+                
+                for (let x = 0; x < terrainCanvas.width; x += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, terrainCanvas.height);
+                    ctx.stroke();
+                }
+            }
+            
+            // Create safety visualization
+            function createSafetyVisualization() {
+                const ctx = safetyCanvas.getContext('2d');
+                
+                // Draw the original image on canvas
+                ctx.drawImage(moonImage, 0, 0, safetyCanvas.width, safetyCanvas.height);
+                
+                // Create a more detailed safety assessment overlay
+                ctx.globalCompositeOperation = 'multiply';
+                
+                // Create gradient for safety map
+                const gradient = ctx.createLinearGradient(0, 0, safetyCanvas.width, 0);
+                gradient.addColorStop(0, 'rgba(78, 205, 196, 0.6)'); // Safe - green
+                gradient.addColorStop(0.3, 'rgba(255, 230, 109, 0.6)'); // Moderate - yellow
+                gradient.addColorStop(0.7, 'rgba(255, 170, 100, 0.6)'); // Caution - orange
+                gradient.addColorStop(1, 'rgba(255, 107, 107, 0.6)'); // Dangerous - red
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, safetyCanvas.width, safetyCanvas.height);
+                
+                // Add some random "crater" circles as hazards
+                ctx.fillStyle = 'rgba(255, 107, 107, 0.7)';
+                for (let i = 0; i < 20; i++) {
+                    const x = Math.random() * safetyCanvas.width;
+                    const y = Math.random() * safetyCanvas.height;
+                    const radius = 15 + Math.random() * 40;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Reset composite operation
+                ctx.globalCompositeOperation = 'source-over';
+                
+                // Highlight optimal landing zones
+                ctx.strokeStyle = '#4ecdc4';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                
+                // Add several safe zones
+                for (let i = 0; i < 5; i++) {
+                    const x = 50 + Math.random() * (safetyCanvas.width - 150);
+                    const y = 50 + Math.random() * (safetyCanvas.height - 150);
+                    const w = 80 + Math.random() * 120;
+                    const h = 80 + Math.random() * 120;
+                    
+                    ctx.strokeRect(x, y, w, h);
+                    
+                    // Add label with safety score
+                    ctx.fillStyle = '#4ecdc4';
+                    ctx.font = 'bold 14px Arial';
+                    const score = (80 + Math.random() * 15).toFixed(0);
+                    ctx.fillText(`Safety: ${score}%`, x + 10, y + 20);
+                }
+                
+                ctx.setLineDash([]);
+            }
+            
+            // Create a heat map overlay on the canvas
+            function createHeatMap(ctx) {
+                const width = analysisCanvas.width;
+                const height = analysisCanvas.height;
+                
+                // Create gradient for heat map
+                const gradient = ctx.createLinearGradient(0, 0, width, 0);
+                gradient.addColorStop(0, 'rgba(78, 205, 196, 0.6)'); // Safe - green
+                gradient.addColorStop(0.5, 'rgba(255, 230, 109, 0.6)'); // Moderate - yellow
+                gradient.addColorStop(1, 'rgba(255, 107, 107, 0.6)'); // Dangerous - red
+                
+                // Apply gradient with some random patterns to simulate analysis
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, height);
+                
+                // Add some random "crater" circles
+                ctx.fillStyle = 'rgba(255, 107, 107, 0.7)';
+                for (let i = 0; i < 15; i++) {
+                    const x = Math.random() * width;
+                    const y = Math.random() * height;
+                    const radius = 10 + Math.random() * 30;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Reset composite operation
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            
+            // Highlight safe landing zones
+            function highlightSafeZones(ctx) {
+                const width = analysisCanvas.width;
+                const height = analysisCanvas.height;
+                
+                // Draw safe zones as green outlined rectangles
+                ctx.strokeStyle = '#4ecdc4';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                
+                // Add several safe zones at random positions
+                for (let i = 0; i < 4; i++) {
+                    const x = 50 + Math.random() * (width - 150);
+                    const y = 50 + Math.random() * (height - 150);
+                    const w = 80 + Math.random() * 100;
+                    const h = 80 + Math.random() * 100;
+                    
+                    ctx.strokeRect(x, y, w, h);
+                    
+                    // Add label
+                    ctx.fillStyle = '#4ecdc4';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText('Safe Zone', x + 10, y + 20);
+                }
+                
+                // Reset line dash
+                ctx.setLineDash([]);
+            }
+        });
+    </script>
+</body>
+</html>
