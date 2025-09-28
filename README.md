@@ -11,7 +11,7 @@ MoonAtlas automates the complex, multi-criteria analysis needed to identify **va
 Landing on the Moon isn’t just about reaching the surface — it’s about choosing the right spot.  
 A single miscalculation can jeopardize billions of dollars and human lives.
 
-LLSA brings together:
+MoonAtlas brings together:
 - 📊 Historical mission data  
 - 🧠 AI-powered analysis  
 - 🗺️ 2D-3D terrain modeling  
